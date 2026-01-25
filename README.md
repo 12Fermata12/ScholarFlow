@@ -1,55 +1,35 @@
-# ScholarFlow - Akademik Üretkenlik Paketi
+# ScholarFlow – Academic Productivity Suite
 
-Google Gemini destekli, modern "Elite" tasarım diliyle hazırlanmış hepsi-bir-arada akademik araştırmacı asistanı.
+An all-in-one academic research assistant powered by Google Gemini, built with a modern **Elite** design language.
 
-Canlı Test İçin: https://scholarflow.mefkuz.com/
+*Live Demo: https://scholarflow.mefkuz.com/*
 
-## ✨ Öne Çıkan Özellikler
+## ✨ Key Features
 
-### 🌑 Modern & Elite Tasarım
-- Tamamen yenilenmiş, premium siyah-beyaz "Elite" arayüz.
-- Glass-morphism kartlar ve sofistike hover efektleri.
-- Tüm sayfalarda tutarlı tipografi ve görsel hiyerarşi.
+### 🌑 Modern & Elite Design
+- Fully redesigned, premium black-and-white **Elite** interface.
+- Glass-morphism cards and sophisticated hover effects.
+- Consistent typography and visual hierarchy across all pages.
 
-### 🤖 Gelişmiş AI Entegrasyonu
-- **Akademik Partner (Chat)**: Her an yanınızda olan, sağ alt köşeden açılan asistan.
-- **AI Scorecard**: Metinlerinizin akademik tonunu ve okunabilirliğini analiz edin.
-- **PDF Analiz**: Makalelerinizi yükleyin ve akıllı özetler/sorularla derinlemesine inceleyin.
+### 🤖 Advanced AI Integration
+- **Academic Partner (Chat)**: Your always-available assistant, accessible from the bottom-right corner.
+- **AI Scorecard**: Analyze the academic tone and readability of your texts.
+- **PDF Analysis**: Upload your papers and explore them with smart summaries and guided questions.
 
-### 🛠️ Kritik Araçlar
-- **Araştırma Planlayıcı**: Hedeflerinizi belirleyin ve ilerlemenizi takip edin.
-- **Okuma Listesi**: Kaynakları "todo", "reading", "done" durumlarıyla yönetin.
-- **Alıntı Yöneticisi**: APA ve diğer formatlarda hızlı kaynakça oluşturun ve kütüphanenize kaydedin.
-- **Odak Modu (Pomodoro)**: Doğa sesleri (Yağmur, Okyanus, Beyaz Gürültü) eşliğinde derin çalışma seansları.
+### 🛠️ Essential Tools
+- **Research Planner**: Define your goals and track your progress.
+- **Reading List**: Manage sources with *todo*, *reading*, and *done* statuses.
+- **Citation Manager**: Quickly generate bibliographies in APA and other formats, and save them to your library.
+- **Focus Mode (Pomodoro)**: Deep work sessions accompanied by nature sounds (Rain, Ocean, White Noise).
 
-### 💾 Veri Güvenliği & Yedekleme
-- **Tam Yedekleme**: Ayarlar sayfasından tüm notlarınızı, API anahtarlarınızı ve verilerinizi tek tıkla JSON olarak dışa aktarın.
-- **Hesap Taşıma**: Giriş ekranından yedeğinizi yükleyerek hesabınızı anında geri yükleyin.
+### 💾 Data Security & Backup
+- **Full Backup**: Export all your notes, API keys, and data as a single JSON file from the settings page.
+- **Account Migration**: Instantly restore your account by uploading your backup from the login screen.
 
-## 🚀 Başlangıç
+## 🚀 Getting Started
 
-Bu proje React + Vite ile geliştirilmiştir.
+This project is built with React + Vite.
 
-1. **Bağımlılıkları Yükleyin**:
+1. **Install Dependencies**:
    ```bash
    npm install
-   ```
-
-2. **Geliştirici Sunucusunu Başlatın**:
-   ```bash
-   npm run dev
-   ```
-
-3. **Gemini API Anahtarı**:
-   AI özelliklerini aktifleştirmek için [Google AI Studio](https://aistudio.google.com/) üzerinden anahtarınızı alın ve uygulama içindeki **Ayarlar** kısmına girin.
-
-## 🛠️ Teknoloji Yığını
-
-- **Frontend**: React 18, Vite
-- **Stil**: Vanilla CSS + Tailwind CSS (Elite Theme)
-- **İkonlar**: Lucide React
-- **AI**: Google Generative AI (Gemini)
-- **Veri**: LocalStorage (Şifrelenmiş/Güvenli Yedekleme Desteği)
-
----
-*Akademik başarınız için tasarlandı.*
