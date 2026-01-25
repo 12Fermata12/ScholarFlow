@@ -27,6 +27,7 @@ const Pomodoro = () => {
         ocean: useRef(new Audio('https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg'))
     };
 
+    // Update audio volume when it changes
     useEffect(() => {
         Object.values(audioRefs).forEach(ref => {
             if (ref.current) {
@@ -36,6 +37,7 @@ const Pomodoro = () => {
         });
     }, [volume]);
 
+    // Timer countdown effect
     useEffect(() => {
         let interval = null;
         if (isActive && timeLeft > 0) {
@@ -48,8 +50,43 @@ const Pomodoro = () => {
             if (timerMode === 'pomodoro') incrementPomodoro();
             alert(t('toast_time_up'));
         }
-        return () => clearInterval(interval);
-    }, [isActive, timeLeft, timerMode]);
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isActive, timeLeft, timerMode, incrementPomodoro, t]);
+
+    // Cleanup all audio and AudioContext on unmount
+    useEffect(() => {
+        return () => {
+            // Stop and cleanup all audio elements
+            Object.values(audioRefs).forEach(ref => {
+                if (ref.current) {
+                    ref.current.pause();
+                    ref.current.currentTime = 0;
+                    ref.current.src = ''; // Release audio resource
+                }
+            });
+
+            // Cleanup AudioContext for white noise
+            if (noiseSourceRef.current) {
+                try {
+                    noiseSourceRef.current.stop();
+                } catch (e) {
+                    // Already stopped
+                }
+                noiseSourceRef.current = null;
+            }
+
+            if (audioCtxRef.current) {
+                try {
+                    audioCtxRef.current.close();
+                } catch (e) {
+                    // Already closed
+                }
+                audioCtxRef.current = null;
+            }
+        };
+    }, []);
 
     const toggleTimer = () => setIsActive(!isActive);
 
@@ -82,11 +119,17 @@ const Pomodoro = () => {
 
     const stopAllSounds = () => {
         Object.values(audioRefs).forEach(ref => {
-            ref.current.pause();
-            ref.current.currentTime = 0;
+            if (ref.current) {
+                ref.current.pause();
+                ref.current.currentTime = 0;
+            }
         });
         if (noiseSourceRef.current) {
-            noiseSourceRef.current.stop();
+            try {
+                noiseSourceRef.current.stop();
+            } catch (e) {
+                // Already stopped or disconnected
+            }
             noiseSourceRef.current = null;
         }
     };

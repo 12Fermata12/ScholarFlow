@@ -1,22 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { safeSetItem, safeGetItem, debounce } from '../utils/storageHelper';
 
 const AppContext = createContext();
 
-const DEFAULT_KEY = "AIzaSyB1poU2jWhtxbuinfE0-Zm9gMVBUUgo7Ro";
+const DEFAULT_KEY = "AIzaSyBesalTWBOqZS7ga3GIDupUo5Lo5DqifKA";
 
 export const AppProvider = ({ children }) => {
     // Auth & Settings
     const [user, setUser] = useState(() => {
-        const saved = localStorage.getItem('app_user');
+        const saved = safeGetItem('app_user');
         return saved ? JSON.parse(saved) : null;
     });
     const [registeredUsers, setRegisteredUsers] = useState(() => {
-        const saved = localStorage.getItem('registered_users');
+        const saved = safeGetItem('registered_users');
         return saved ? JSON.parse(saved) : [];
     });
-    const [language, setLanguage] = useState(() => localStorage.getItem('app_language') || 'tr');
-    const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'dark');
-    const [apiKey, setApiKey] = useState(() => localStorage.getItem('app_apikey') || DEFAULT_KEY);
+    const [language, setLanguage] = useState(() => safeGetItem('app_language') || 'tr');
+    const [theme, setTheme] = useState(() => safeGetItem('app_theme') || 'dark');
+    const [apiKey, setApiKey] = useState(() => safeGetItem('app_apikey') || DEFAULT_KEY);
 
     // Data - Partitioned by user ID
     const [citations, setCitations] = useState([]);
@@ -29,11 +30,11 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         if (user) {
             const suffix = `_${user.id}`;
-            const savedCites = localStorage.getItem(`citations${suffix}`);
-            const savedRead = localStorage.getItem(`reading_list${suffix}`);
-            const savedPlan = localStorage.getItem(`planner_items${suffix}`);
-            const savedNotes = localStorage.getItem(`research_notes${suffix}`);
-            const savedPom = localStorage.getItem(`pomodoro_stats${suffix}`);
+            const savedCites = safeGetItem(`citations${suffix}`);
+            const savedRead = safeGetItem(`reading_list${suffix}`);
+            const savedPlan = safeGetItem(`planner_items${suffix}`);
+            const savedNotes = safeGetItem(`research_notes${suffix}`);
+            const savedPom = safeGetItem(`pomodoro_stats${suffix}`);
 
             setCitations(savedCites ? JSON.parse(savedCites) : []);
             setReadingList(savedRead ? JSON.parse(savedRead) : []);
@@ -60,25 +61,64 @@ export const AppProvider = ({ children }) => {
         }
     }, [user]);
 
-    // Persistent Sync
-    useEffect(() => localStorage.setItem('app_user', JSON.stringify(user)), [user]);
-    useEffect(() => localStorage.setItem('registered_users', JSON.stringify(registeredUsers)), [registeredUsers]);
-    useEffect(() => localStorage.setItem('app_language', language), [language]);
-    useEffect(() => localStorage.setItem('app_apikey', apiKey), [apiKey]);
+    // Debounced save functions to prevent excessive writes - using useCallback for stable references
+    const debouncedSaveUser = useCallback(
+        debounce((userData) => {
+            safeSetItem('app_user', JSON.stringify(userData));
+        }, 500),
+        [] // Empty deps - debounce function is stable
+    );
+
+    const debouncedSaveRegisteredUsers = useCallback(
+        debounce((users) => {
+            safeSetItem('registered_users', JSON.stringify(users));
+        }, 500),
+        []
+    );
+
+    const debouncedSaveUserData = useCallback(
+        debounce((userId, data) => {
+            const suffix = `_${userId}`;
+            safeSetItem(`citations${suffix}`, JSON.stringify(data.citations));
+            safeSetItem(`reading_list${suffix}`, JSON.stringify(data.readingList));
+            safeSetItem(`planner_items${suffix}`, JSON.stringify(data.plannerItems));
+            safeSetItem(`research_notes${suffix}`, JSON.stringify(data.notes));
+            safeSetItem(`pomodoro_stats${suffix}`, JSON.stringify({
+                date: new Date().toISOString().split('T')[0],
+                count: data.dailyPomodoros
+            }));
+        }, 500),
+        []
+    );
+
+    // Persistent Sync with debouncing
+    useEffect(() => {
+        if (user) debouncedSaveUser(user);
+    }, [user, debouncedSaveUser]);
+
+    useEffect(() => {
+        if (registeredUsers.length > 0) debouncedSaveRegisteredUsers(registeredUsers);
+    }, [registeredUsers, debouncedSaveRegisteredUsers]);
+
+    useEffect(() => {
+        safeSetItem('app_language', language);
+    }, [language]);
+
+    useEffect(() => {
+        safeSetItem('app_apikey', apiKey);
+    }, [apiKey]);
 
     useEffect(() => {
         if (user) {
-            const suffix = `_${user.id}`;
-            localStorage.setItem(`citations${suffix}`, JSON.stringify(citations));
-            localStorage.setItem(`reading_list${suffix}`, JSON.stringify(readingList));
-            localStorage.setItem(`planner_items${suffix}`, JSON.stringify(plannerItems));
-            localStorage.setItem(`research_notes${suffix}`, JSON.stringify(notes));
-            localStorage.setItem(`pomodoro_stats${suffix}`, JSON.stringify({
-                date: new Date().toISOString().split('T')[0],
-                count: dailyPomodoros
-            }));
+            debouncedSaveUserData(user.id, {
+                citations,
+                readingList,
+                plannerItems,
+                notes,
+                dailyPomodoros
+            });
         }
-    }, [citations, readingList, plannerItems, notes, dailyPomodoros, user]);
+    }, [citations, readingList, plannerItems, notes, dailyPomodoros, user, debouncedSaveUserData]);
 
     // Auth Actions
     const signup = (name, email, password) => {

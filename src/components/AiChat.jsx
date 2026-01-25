@@ -26,14 +26,18 @@ const AiChat = () => {
         scrollToBottom();
     }, [messages, isFullScreen]);
 
-    // Update welcome message when language changes if it's the only message
+    // Update welcome message when language changes - only if it's still the initial welcome
     useEffect(() => {
-        if (messages.length === 1 && messages[0].role === 'bot') {
-            setMessages([
-                { ...messages[0], text: t('chat_welcome') }
-            ]);
+        if (messages.length === 1 && messages[0].role === 'bot' && messages[0].id === 1) {
+            setMessages([{
+                id: 1,
+                role: 'bot',
+                text: t('chat_welcome'),
+                time: messages[0].time
+            }]);
         }
-    }, [currentLang, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentLang]); // Only depend on language change, not on messages or t
 
     const handleSend = async () => {
         if (!inputValue.trim() || isLoading) return;

@@ -27,6 +27,22 @@ const Layout = ({ children }) => {
         document.title = t('app_title');
     }, [currentLang, t]);
 
+    // Handle window resize with cleanup
+    React.useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth > 768 && !sidebarOpen) {
+                setSidebarOpen(true);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        // Cleanup event listener on unmount
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [sidebarOpen]);
+
     const toolsNavItems = [
         { to: "/planner", icon: <ListTodo size={18} className="text-slate-400" />, label: t('menu_planner') },
         { to: "/reading", icon: <BookOpen size={18} className="text-slate-400" />, label: t('menu_reading') },

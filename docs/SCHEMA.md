@@ -1,4 +1,4 @@
-# ScholarFlow Database Schema
+s# ScholarFlow Database Schema
 
 This document outlines the database schema design for ScholarFlow, supporting both PostgreSQL (relational) and MongoDB (document-based) implementations.
 

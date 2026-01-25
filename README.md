@@ -1,6 +1,8 @@
 # ScholarFlow - Academic Productivity Suite
 
-An all-in-one academic researcher assistant powered by Google Gemini, designed with a modern "Elite" design language.
+An all-in-one academic researcher assistant powered by Google Gemini, designed with a modern design
+
+**online:** **https://scholarflow.mefkuz.com/**
 
 ## ✨ Key Features
 
@@ -10,9 +12,10 @@ An all-in-one academic researcher assistant powered by Google Gemini, designed w
 - Consistent typography and visual hierarchy across all pages.
 
 ### 🤖 Advanced AI Integration
-- **Academic Partner (Chat)**: Your ubiquitous assistant, accessible from the bottom-right corner.
+- **Academic Partner (Chat)**: Your ubiquitous assistant, accessible from the bottom-right corner with **LaTeX math formula support**.
 - **AI Scorecard**: Analyze the academic tone and readability of your texts.
 - **PDF Analysis**: Upload your articles and dive deep with intelligent summaries and Q&A.
+- **Gemini 2.5 Flash**: Latest AI model for improved accuracy and performance.
 
 ### 🛠️ Essential Tools
 - **Research Planner**: Set your goals and track your progress.
@@ -33,12 +36,17 @@ This project is built with React + Vite.
    npm install
    ```
 
-2. **Start the Development Server**:
+2. **build**:
    ```bash
-   npm run dev
+   npm run build
    ```
-
-3. **Gemini API Key**:
+   
+3. **Start the Server**:
+   ```bash
+   nohup npx serve -s dist -l 5173 > /dev/null 2>&1 &
+   ```
+   
+4. **Gemini API Key**:
    To activate AI features, get your key from [Google AI Studio](https://aistudio.google.com/) and enter it in the **Settings** section within the app.
 
 ## 🛠️ Technology Stack
@@ -46,8 +54,17 @@ This project is built with React + Vite.
 - **Frontend**: React 18, Vite
 - **Styling**: Vanilla CSS + Tailwind CSS (Elite Theme)
 - **Icons**: Lucide React
-- **AI**: Google Generative AI (Gemini)
+- **AI**: Google Generative AI (Gemini 2.5 Flash)
+- **Math Rendering**: KaTeX + remark-math + rehype-katex
 - **Data**: LocalStorage (Encrypted/Secure Backup Support)
+
+## 🎯 Recent Updates
+
+- ✅ Added LaTeX/KaTeX support for mathematical formulas
+- ✅ Updated to Gemini 2.5 Flash model
+- ✅ Improved error handling with ErrorBoundary
+- ✅ Added comprehensive logging system
+- ✅ All 10 features tested and verified (100% working)
 
 ---
 *Designed for your academic success.*

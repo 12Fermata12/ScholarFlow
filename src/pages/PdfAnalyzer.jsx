@@ -12,7 +12,7 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const PdfAnalyzer = () => {
-    const { t, apiKey } = useApp();
+    const { t, apiKey, currentLang } = useApp();
     const [isProcessing, setIsProcessing] = useState(false);
     const [result, setResult] = useState(null);
     const [activeTab, setActiveTab] = useState('summary');
@@ -62,20 +62,30 @@ const PdfAnalyzer = () => {
             Metin:
             "${text.substring(0, 15000)}"`;
 
-            // We reuse getGeminiSuggestions but with a custom prompt logic here 
-            // Better to have a direct call or update getGeminiSuggestions to be more flexible
-            // For now, I'll implement a local fetch for speed or stick to the utility.
-            // Let's use a raw fetch to ensure the exact prompt format for Summary/Keywords.
-
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
+            // Create timeout promise
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('API request timeout')), 30000);
             });
 
+            // Race between API call and timeout
+            const response = await Promise.race([
+                fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                }),
+                timeoutPromise
+            ]);
+
             const data = await response.json();
+
+            // Validate response
+            if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+                throw new Error('Invalid API response');
+            }
+
             const aiResponse = data.candidates[0].content.parts[0].text;
 
             // Parse AI response (basic split for demo)
@@ -92,7 +102,7 @@ const PdfAnalyzer = () => {
         } finally {
             setIsProcessing(false);
         }
-    }, [apiKey]);
+    }, [apiKey, t, currentLang]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,

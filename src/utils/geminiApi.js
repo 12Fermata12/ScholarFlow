@@ -25,21 +25,48 @@ Metin:
 
 Sadece önerileri madde madde listele, başka açıklama yapma. Her öneri tek satır olsun.`;
 
-        const result = await model.generateContent(prompt);
+        // Create timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('API request timeout after 30 seconds')), 30000);
+        });
+
+        // Race between API call and timeout
+        const result = await Promise.race([
+            model.generateContent(prompt),
+            timeoutPromise
+        ]);
+
         const response = await result.response;
+
+        // Validate response
+        if (!response || !response.text) {
+            console.error('Invalid API response:', response);
+            return null;
+        }
+
         const suggestions = response.text();
 
         // Parse suggestions (her satır bir öneri)
         const suggestionList = suggestions
             .split('\n')
             .filter(line => line.trim().length > 0)
-            .map(line => line.replace(/^[-*•]\s*/, '').trim())
+            .map(line => line.replace(/^[-*•\d.]\s*/, '').trim())
             .filter(line => line.length > 10) // Çok kısa satırları filtrele
             .slice(0, 5); // Maksimum 5 öneri
 
         return suggestionList.length > 0 ? suggestionList : null;
     } catch (error) {
         console.error('Gemini API Error:', error);
+
+        // More specific error logging
+        if (error.message?.includes('timeout')) {
+            console.error('API request timed out');
+        } else if (error.message?.includes('quota')) {
+            console.error('API quota exceeded');
+        } else if (error.message?.includes('key')) {
+            console.error('Invalid API key');
+        }
+
         return null;
     }
 };
