@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AppContext = createContext();
 
-const DEFAULT_KEY = "AIzaSyC70OpCzgI013zA0vpUSPuxiTzIyZKELR4";
+const DEFAULT_KEY = "AIzaSyA67n0Scb4xly5e98gFHT1roxw6FNWGmxk";
 
 export const AppProvider = ({ children }) => {
     // Auth & Settings
@@ -16,6 +16,7 @@ export const AppProvider = ({ children }) => {
     });
     const [language, setLanguage] = useState(() => localStorage.getItem('app_language') || 'tr');
     const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'dark');
+    const [apiKey, setApiKey] = useState(() => localStorage.getItem('app_apikey') || DEFAULT_KEY);
 
     // Data - Partitioned by user ID
     const [citations, setCitations] = useState([]);
@@ -63,6 +64,7 @@ export const AppProvider = ({ children }) => {
     useEffect(() => localStorage.setItem('app_user', JSON.stringify(user)), [user]);
     useEffect(() => localStorage.setItem('registered_users', JSON.stringify(registeredUsers)), [registeredUsers]);
     useEffect(() => localStorage.setItem('app_language', language), [language]);
+    useEffect(() => localStorage.setItem('app_apikey', apiKey), [apiKey]);
 
     useEffect(() => {
         if (user) {
@@ -116,6 +118,61 @@ export const AppProvider = ({ children }) => {
 
     const incrementPomodoro = () => setDailyPomodoros(prev => prev + 1);
     const toggleLanguage = () => setLanguage(prev => prev === 'tr' ? 'en' : 'tr');
+
+    // Import/Export Functions
+    const exportUserData = () => {
+        const exportData = {
+            version: '2.0',
+            exportDate: new Date().toISOString(),
+            // User & Auth
+            user: user,
+            registeredUsers: registeredUsers, // Backup all accounts
+            apiKey: apiKey,
+            // App State
+            language: language,
+            theme: theme,
+            // Data
+            citations: citations,
+            readingList: readingList,
+            plannerItems: plannerItems,
+            notes: notes,
+            dailyPomodoros: dailyPomodoros
+        };
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `scholarflow_full_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const importUserData = (fileContent) => {
+        try {
+            const data = JSON.parse(fileContent);
+
+            // Restore Auth & Settings
+            if (data.user) setUser(data.user);
+            if (data.registeredUsers) setRegisteredUsers(data.registeredUsers);
+            if (data.apiKey) setApiKey(data.apiKey);
+            if (data.language) setLanguage(data.language);
+            if (data.theme) setTheme(data.theme);
+
+            // Restore Data
+            if (data.citations) setCitations(data.citations);
+            if (data.readingList) setReadingList(data.readingList);
+            if (data.plannerItems) setPlannerItems(data.plannerItems);
+            if (data.notes) setNotes(data.notes);
+            if (data.dailyPomodoros !== undefined) setDailyPomodoros(data.dailyPomodoros);
+
+            return true;
+        } catch (error) {
+            console.error('Import error:', error);
+            return false;
+        }
+    };
 
     const translations = {
         tr: {
@@ -180,6 +237,7 @@ export const AppProvider = ({ children }) => {
             login_title: "Tekrar Hoş Geldiniz",
             login_subtitle: "Akademik yolculuğunuza devam edin.",
             login_btn: "Giriş Yap",
+            login_btn_import: "Verileri İçe Aktar",
             login_no_account: "Hesabınız yok mu?",
             login_go_signup: "Hemen Kaydolun",
             signup_title: "Hesap Oluştur",
@@ -196,7 +254,71 @@ export const AppProvider = ({ children }) => {
             err_invalid_login: "E-posta veya şifre hatalı.",
             toast_copied: "Kopyalandı!",
             toast_time_up: "Süre doldu!",
-            toast_saved: "Kaydedildi."
+            toast_saved: "Kaydedildi.",
+            menu_ai_score: "AI Puanlama",
+            ai_score_title: "AI Akademik Puanlama",
+            ai_score_subtitle: "Metninizin akademik kalitesini yapay zeka ile değerlendirin.",
+            ai_metric_lang: "Akademik Dil",
+            ai_metric_read: "Okunabilirlik",
+            ai_metric_ref: "Referans Kalitesi",
+            ai_suggestions: "Geliştirme Önerileri",
+            ai_overall_score: "Genel Puan",
+            settings_api_key: "AI API Anahtarı",
+            settings_export: "Verileri Dışa Aktar",
+            settings_import: "Verileri İçe Aktar",
+            toast_exported: "Veriler başarıyla dışa aktarıldı!",
+            toast_imported: "Veriler başarıyla içe aktarıldı!",
+            toast_import_error: "İçe aktarma hatası!",
+            ai_sample_text: "Analiz etmek istediğiniz metni buraya yapıştırın...",
+            menu_pdf_analyzer: "PDF Analizcisi",
+            pdf_analyzer_title: "PDF Akademik Analiz",
+            pdf_analyzer_subtitle: "PDF dosyalarınızdan özet ve anahtar kelimeler oluşturun.",
+            pdf_drop_zone: "Dosyaları buraya sürükleyin veya seçmek için tıklayın",
+            pdf_processing: "PDF İşleniyor...",
+            pdf_summary: "Özet",
+            pdf_keywords: "Anahtar Kelimeler",
+            pdf_no_file: "Henüz bir dosya seçilmedi.",
+            chat_welcome: "Merhaba! Ben akademik araştırma partnerinizim. Size nasıl yardımcı olabilirim?",
+            chat_api_needed: "Sohbet etmek için lütfen ayarlardan Gemini API anahtarınızı girin.",
+            chat_system_prompt: "Sen bilgili, nazik ve profesyonel bir akademik araştırma partnerisin. Kullanıcıya tez yazımı, literatür taraması, metodoloji tasarımı ve akademik dil konusunda yardımcı oluyorsun. Yanıtların akademik bir tonda olmalı ama anlaşılır kalmalı.",
+            chat_error: "Üzgünüm, bir hata oluştu. Lütfen API anahtarınızı kontrol edin.",
+            chat_placeholder: "Mesajınızı yazın...",
+            chat_academic_partner: "Akademik Partner",
+            chat_online: "Çevrimiçi",
+            score_input_label: "Metin Girişi",
+            score_reset_btn: "Temizle",
+            score_error_empty: "Lütfen analiz edilecek bir metin girin.",
+            score_error_short: "Metin çok kısa. En az 50 karakter giriniz.",
+            score_error_failed: "Metin analiz edilemedi. Lütfen daha uzun bir metin girin.",
+            score_error_generic: "Analiz sırasında bir hata oluştu.",
+            score_analyzing: "Analiz Ediliyor...",
+            score_analyze_btn: "Analiz Et",
+            score_stats_info: "{chars} karakter • {words} kelime",
+            score_ai_active: "Gemini AI önerileri aktif",
+            score_local_active: "API anahtarı girilmedi - yerel analiz kullanılıyor",
+            score_api_error: "Gemini API'ye bağlanılamadı. Lütfen API anahtarınızı kontrol edin. Yerel öneriler gösteriliyor.",
+            score_no_results: "Analiz sonuçları burada görünecek",
+            pdf_error_invalid: "Lütfen geçerli bir PDF dosyası yükleyin.",
+            pdf_error_api: "PDF analizi için lütfen ayarlardan Gemini API anahtarınızı girin.",
+            pdf_error_generic: "Analiz sırasında bir hata oluştu. Lütfen API anahtarınızı kontrol edin.",
+            pdf_processing_subtitle: "Akademik içgörüler oluşturuluyor...",
+            pdf_summary_title: "Metin Özeti",
+            pdf_keywords_title: "Anahtar Kavramlar",
+            pdf_new_file: "Yeni Dosya Yükle",
+            view_details: "Detayları Gör",
+            app_title: "ScholarFlow - Akademik Üretkenlik Paketi",
+            label_email_placeholder: "ornek@edu.tr",
+            sugg_academic_low: "Daha fazla akademik terim ve kavram kullanarak metninizi güçlendirebilirsiniz.",
+            sugg_explain_terms: "Teknik terimlerin tanımlarını ilk kullanımda açıklayın.",
+            sugg_shorter_sentences: "Bazı cümleleri daha kısa ve öz hale getirerek okunabilirliği artırabilirsiniz.",
+            sugg_longer_sentences: "Cümlelerinizi biraz daha detaylandırarak akademik derinliği artırabilirsiniz.",
+            sugg_transitions: "Metninizde paragraf geçişlerinde tutarlı bağlaçlar kullanın.",
+            sugg_current_refs: "Güncel kaynakları referans olarak eklemek metninizi güçlendirir.",
+            sugg_cite_lit: "İddialarınızı desteklemek için literatürdeki ilgili çalışmalara atıfta bulunun.",
+            sugg_more_examples: "Argümanlarınızı daha kapsamlı örneklerle destekleyebilirsiniz.",
+            sugg_academic_ok: "✓ Akademik dil kullanımınız başarılı, devam edin.",
+            sugg_readability_ok: "✓ Metniniz akıcı ve okunabilir bir yapıda.",
+            sugg_refs_ok: "✓ Referans kullanımınız akademik standartlara uygun."
         },
         en: {
             menu_tools: "Tools",
@@ -260,6 +382,7 @@ export const AppProvider = ({ children }) => {
             login_title: "Welcome Back",
             login_subtitle: "Continue your academic journey.",
             login_btn: "Login",
+            login_btn_import: "Import Data",
             login_no_account: "Don't have an account?",
             login_go_signup: "Sign up now",
             signup_title: "Create Account",
@@ -276,7 +399,71 @@ export const AppProvider = ({ children }) => {
             err_invalid_login: "Invalid email or password.",
             toast_copied: "Copied!",
             toast_time_up: "Time's up!",
-            toast_saved: "Saved."
+            toast_saved: "Saved.",
+            menu_ai_score: "AI Scoring",
+            ai_score_title: "AI Academic Scoring",
+            ai_score_subtitle: "Evaluate your text's academic quality with AI.",
+            ai_metric_lang: "Academic Language",
+            ai_metric_read: "Readability",
+            ai_metric_ref: "Reference Quality",
+            ai_suggestions: "Improvement Suggestions",
+            ai_overall_score: "Overall Score",
+            settings_api_key: "AI API Key",
+            settings_export: "Export Data",
+            settings_import: "Import Data",
+            toast_exported: "Data exported successfully!",
+            toast_imported: "Data imported successfully!",
+            toast_import_error: "Import error!",
+            ai_sample_text: "Paste the text you want to analyze here...",
+            menu_pdf_analyzer: "PDF Analyzer",
+            pdf_analyzer_title: "PDF Academic Analysis",
+            pdf_analyzer_subtitle: "Generate summary and keywords from your PDF files.",
+            pdf_drop_zone: "Drag & drop files here, or click to select",
+            pdf_processing: "Processing PDF...",
+            pdf_summary: "Summary",
+            pdf_keywords: "Keywords",
+            pdf_no_file: "No file selected yet.",
+            chat_welcome: "Hello! I am your academic research partner. How can I help you?",
+            chat_api_needed: "Please enter your Gemini API key in settings to chat.",
+            chat_system_prompt: "You are a knowledgeable, polite, and professional academic research partner. You help the user with thesis writing, literature review, methodology design, and academic language. Your responses should be in an academic tone but remain understandable.",
+            chat_error: "Sorry, an error occurred. Please check your API key.",
+            chat_placeholder: "Type your message...",
+            chat_academic_partner: "Academic Partner",
+            chat_online: "Online",
+            score_input_label: "Text Input",
+            score_reset_btn: "Clear",
+            score_error_empty: "Please enter a text to analyze.",
+            score_error_short: "Text is too short. Please enter at least 50 characters.",
+            score_error_failed: "Text could not be analyzed. Please enter a longer text.",
+            score_error_generic: "An error occurred during analysis.",
+            score_analyzing: "Analyzing...",
+            score_analyze_btn: "Analyze",
+            score_stats_info: "{chars} characters • {words} words",
+            score_ai_active: "Gemini AI suggestions active",
+            score_local_active: "API key not entered - using local analysis",
+            score_api_error: "Could not connect to Gemini API. Please check your API key. Local suggestions are shown.",
+            score_no_results: "Analysis results will appear here",
+            pdf_error_invalid: "Please upload a valid PDF file.",
+            pdf_error_api: "Please enter your Gemini API key in settings for PDF analysis.",
+            pdf_error_generic: "An error occurred during analysis. Please check your API key.",
+            pdf_processing_subtitle: "Generating academic insights...",
+            pdf_summary_title: "Text Summary",
+            pdf_keywords_title: "Key Concepts",
+            pdf_new_file: "Upload New File",
+            view_details: "View Details",
+            app_title: "ScholarFlow - Academic Productivity Suite",
+            label_email_placeholder: "example@edu.tr",
+            sugg_academic_low: "You can strengthen your text by using more academic terms and concepts.",
+            sugg_explain_terms: "Explain the definitions of technical terms on their first use.",
+            sugg_shorter_sentences: "You can improve readability by making some sentences shorter and more concise.",
+            sugg_longer_sentences: "You can increase academic depth by elaborating on your sentences a bit more.",
+            sugg_transitions: "Use consistent transitions in paragraph transitions in your text.",
+            sugg_current_refs: "Adding current sources as references strengthens your text.",
+            sugg_cite_lit: "Cite relevant studies in the literature to support your claims.",
+            sugg_more_examples: "You can support your arguments with more comprehensive examples.",
+            sugg_academic_ok: "✓ Your academic language usage is successful, keep it up.",
+            sugg_readability_ok: "✓ Your text has a fluid and readable structure.",
+            sugg_refs_ok: "✓ Your reference usage complies with academic standards."
         }
     };
 
@@ -287,11 +474,13 @@ export const AppProvider = ({ children }) => {
             user, signup, login, logout,
             currentLang: language, setLanguage, toggleLanguage,
             theme, setTheme,
+            apiKey, setApiKey,
             citations, addCitation, removeCitation, clearCitations,
             readingList, addReadingItem, updateReadingStatus, removeReadingItem,
             plannerItems, addPlannerItem, togglePlannerItem, removePlannerItem,
             notes, addNote, removeNote,
             dailyPomodoros, incrementPomodoro,
+            exportUserData, importUserData,
             t
         }}>
             {children}

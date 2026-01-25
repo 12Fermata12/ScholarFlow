@@ -6,25 +6,38 @@ import {
     BookOpen,
     Settings,
     Menu,
-    Globe,
     Home,
     ListTodo,
     StickyNote,
-    LogOut
+    LogOut,
+    Sparkles,
+    FileSearch,
+    ChevronDown,
+    Quote
 } from 'lucide-react';
+import AiChat from './AiChat';
+import logo from '../assets/logo.png';
 
 const Layout = ({ children }) => {
     const { currentLang, toggleLanguage, t, user, logout } = useApp();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
-    const navItems = [
-        { to: "/", icon: <Home size={18} className="text-slate-400" />, label: 'Dashboard' },
+    React.useEffect(() => {
+        document.title = t('app_title');
+    }, [currentLang, t]);
+
+    const toolsNavItems = [
         { to: "/planner", icon: <ListTodo size={18} className="text-slate-400" />, label: t('menu_planner') },
         { to: "/reading", icon: <BookOpen size={18} className="text-slate-400" />, label: t('menu_reading') },
-        { to: "/citations", icon: <BookOpen size={18} className="text-slate-400" />, label: t('menu_citation') },
+        { to: "/citations", icon: <Quote size={18} className="text-slate-400 rotate-180" />, label: t('menu_citation') },
         { to: "/notes", icon: <StickyNote size={18} className="text-slate-400" />, label: t('menu_notes') },
         { to: "/pomodoro", icon: <Clock size={18} className="text-slate-400" />, label: t('menu_focus') },
+    ];
+
+    const aiNavItems = [
+        { to: "/ai-score", icon: <Sparkles size={18} className="text-slate-400" />, label: t('menu_ai_score') },
+        { to: "/pdf-analyzer", icon: <FileSearch size={18} className="text-slate-400" />, label: t('menu_pdf_analyzer') },
     ];
 
     const handleLogout = () => {
@@ -45,7 +58,7 @@ const Layout = ({ children }) => {
                         </button>
 
                         <NavLink to="/" className="flex items-center gap-3 group transition">
-                            <div className="w-8 h-8 bg-white text-black rounded-lg flex items-center justify-center font-serif font-bold text-xl shadow-lg group-hover:scale-105 transition-transform">S</div>
+                            <img src={logo} alt="Logo" className="w-8 h-8 rounded-lg shadow-lg group-hover:scale-105 transition-transform bg-white" />
                             <span className="text-lg font-semibold tracking-tight text-white group-hover:opacity-80 transition font-sans">ScholarFlow</span>
                         </NavLink>
                     </div>
@@ -53,9 +66,10 @@ const Layout = ({ children }) => {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={toggleLanguage}
-                            className="flex items-center gap-2 text-[10px] font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/10 transition text-slate-300 hover:text-white uppercase tracking-widest"
+                            className="flex items-center gap-2 pl-4 pr-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group relative overflow-hidden active:scale-95"
                         >
-                            <Globe size={12} className="text-slate-500" /> <span>{currentLang?.toUpperCase()}</span>
+                            <span className="text-[10px] font-black text-slate-300 hover:text-white uppercase tracking-[0.2em]">{currentLang}</span>
+                            <ChevronDown size={14} className="text-slate-600 group-hover:text-slate-400 transition-colors" />
                         </button>
 
                         <div className="h-5 w-px bg-white/10 mx-1"></div>
@@ -93,11 +107,40 @@ const Layout = ({ children }) => {
                     `}
                 >
                     <div className="flex-1 py-6 space-y-1 px-2.5 overflow-y-auto custom-scrollbar">
+                        {/* Sidebar Items */}
+
+                        {/* Araçlar Section */}
                         <div className={`px-4 pb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
                             {t('menu_tools')}
                         </div>
 
-                        {navItems.map(item => (
+                        {toolsNavItems.map(item => (
+                            <NavLink
+                                key={item.to}
+                                to={item.to}
+                                className={({ isActive }) => `
+                                    flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative
+                                    ${isActive
+                                        ? 'bg-white/10 text-white border-r-2 border-white/60 shadow-sm'
+                                        : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}
+                                `}
+                                title={!sidebarOpen ? item.label : ''}
+                            >
+                                <div className={`flex-shrink-0 transition-transform duration-300 ${!sidebarOpen ? 'mx-auto scale-110' : ''}`}>
+                                    {item.icon}
+                                </div>
+                                <span className={`font-medium text-xs whitespace-nowrap transition-all duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 absolute left-full pointer-events-none'}`}>
+                                    {item.label}
+                                </span>
+                            </NavLink>
+                        ))}
+
+                        {/* AI Section */}
+                        <div className={`px-4 pt-4 pb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+                            AI
+                        </div>
+
+                        {aiNavItems.map(item => (
                             <NavLink
                                 key={item.to}
                                 to={item.to}
@@ -142,6 +185,7 @@ const Layout = ({ children }) => {
                     </div>
                 </main>
             </div>
+            {user && <AiChat />}
         </div>
     );
 };

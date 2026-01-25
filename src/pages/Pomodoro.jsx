@@ -7,11 +7,12 @@ import {
     CloudRain,
     Waves,
     Waves as NoiseIcon,
-    Volume2
+    Volume2,
+    Clock
 } from 'lucide-react';
 
 const Pomodoro = () => {
-    const { incrementPomodoro, dailyPomodoros, t } = useApp();
+    const { incrementPomodoro, dailyPomodoros, t, currentLang } = useApp();
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [initialTime, setInitialTime] = useState(25 * 60);
     const [isActive, setIsActive] = useState(false);
@@ -127,7 +128,10 @@ const Pomodoro = () => {
     return (
         <div className="max-w-4xl mx-auto space-y-12 py-8">
             <header>
-                <h2 className="text-3xl font-serif text-white">{t('menu_focus')}</h2>
+                <h2 className="text-3xl font-serif text-white flex items-center gap-4">
+                    <Clock className="text-slate-400" size={28} />
+                    {t('menu_focus')}
+                </h2>
                 <p className="text-slate-500 mt-2">{t('focus_subtitle')}</p>
             </header>
 
@@ -149,7 +153,7 @@ const Pomodoro = () => {
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-7xl font-mono font-bold text-white tracking-tighter">{formatTime(timeLeft)}</span>
                             <span className="text-[10px] text-slate-400 mt-3 font-black uppercase tracking-[0.3em]">
-                                {isActive ? (t('currentLang') === 'tr' ? 'Odaklanılıyor' : 'Focusing') : (t('currentLang') === 'tr' ? 'Duraklatıldı' : 'Paused')}
+                                {isActive ? (currentLang === 'tr' ? 'Odaklanılıyor' : 'Focusing') : (currentLang === 'tr' ? 'Duraklatıldı' : 'Paused')}
                             </span>
                         </div>
                     </div>

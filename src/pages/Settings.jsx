@@ -1,14 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { Globe, Moon, ShieldCheck, Cpu } from 'lucide-react';
+import { Globe, Moon, ShieldCheck, Cpu, Download, Upload, Key } from 'lucide-react';
 
 const Settings = () => {
-    const { currentLang, setLanguage, t } = useApp();
+    const { currentLang, setLanguage, t, apiKey, setApiKey, exportUserData, importUserData } = useApp();
     const [saved, setSaved] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const fileInputRef = useRef(null);
 
     const handleSave = () => {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+    };
+
+    const showToast = (message) => {
+        setToastMessage(message);
+        setTimeout(() => setToastMessage(''), 3000);
+    };
+
+    const handleExport = () => {
+        exportUserData();
+        showToast(t('toast_exported'));
+    };
+
+    const handleImport = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const success = importUserData(event.target.result);
+                if (success) {
+                    showToast(t('toast_imported'));
+                } else {
+                    showToast(t('toast_import_error'));
+                }
+            };
+            reader.readAsText(file);
+        }
     };
 
     return (
@@ -52,6 +84,56 @@ const Settings = () => {
                             {t('settings_privacy_desc')}
                         </p>
                     </div>
+
+                    {/* API Key Panel */}
+                    <div className="glass-panel p-8 rounded-3xl border-white/5 space-y-4 bg-[#111114]/60">
+                        <div className="flex items-center gap-4 mb-2">
+                            <div className="p-3 rounded-xl bg-white/5 text-white">
+                                <Key size={20} />
+                            </div>
+                            <h2 className="text-white font-semibold">{t('settings_api_key')}</h2>
+                        </div>
+                        <input
+                            type="password"
+                            value={apiKey}
+                            onChange={(e) => setApiKey(e.target.value)}
+                            placeholder="sk-..."
+                            className="w-full h-12 bg-black/30 border border-white/10 rounded-xl px-4 text-slate-300 text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-white/20"
+                        />
+                    </div>
+
+                    {/* Import/Export Panel */}
+                    <div className="glass-panel p-8 rounded-3xl border-white/5 space-y-4 bg-[#111114]/60">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="p-3 rounded-xl bg-white/5 text-white">
+                                <Download size={20} />
+                            </div>
+                            <h2 className="text-white font-semibold">Veri Yönetimi</h2>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleExport}
+                                className="flex-1 h-12 bg-white text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-slate-200 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                            >
+                                <Download size={16} />
+                                {t('settings_export')}
+                            </button>
+                            <button
+                                onClick={handleImport}
+                                className="flex-1 h-12 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                            >
+                                <Upload size={16} />
+                                {t('settings_import')}
+                            </button>
+                        </div>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".json"
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
+                    </div>
                 </div>
 
                 <div className="md:col-span-2 space-y-8">
@@ -84,9 +166,28 @@ const Settings = () => {
                             <StatusLine label="Data Engine" value="LocalStorage/V3" />
                             <StatusLine label="UI Engine" value="React/Tailwind" />
                         </div>
+
+                        <div className="pt-4 border-t border-white/5">
+                            <a
+                                href="https://github.com/mefkuz1/scholarflow"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full h-12 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-3 hover:bg-white/10 active:scale-[0.98] group"
+                            >
+                                <Download size={16} className="text-slate-500 group-hover:text-white transition-colors" />
+                                Github'dan Güncelle (Manuel)
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            {toastMessage && (
+                <div className="fixed bottom-8 right-8 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 font-bold text-sm animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    {toastMessage}
+                </div>
+            )}
         </div>
     );
 };

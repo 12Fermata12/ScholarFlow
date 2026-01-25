@@ -8,11 +8,15 @@ import {
     Globe,
     FileText,
     Sparkles,
-    CheckCircle2
+    CheckCircle2,
+    ListFilter,
+    Quote
 } from 'lucide-react';
+import { formatCitation, formats } from '../utils/citationFormatter';
 
 const Citations = () => {
     const { addCitation, citations, removeCitation, clearCitations, t, currentLang } = useApp();
+    const [citationFormat, setCitationFormat] = useState('APA');
     const [type, setType] = useState('book');
     const [form, setForm] = useState({
         authorLast: '',
@@ -46,8 +50,13 @@ const Citations = () => {
     };
 
     const handleSave = () => {
-        if (!preview) return;
-        addCitation(preview);
+        if (!form.authorLast || !form.title) return;
+        addCitation({
+            ...form,
+            id: Date.now().toString(),
+            citationType: type,
+            dateAdded: new Date().toISOString()
+        });
         setForm({
             authorLast: '',
             authorFirst: '',
@@ -63,7 +72,10 @@ const Citations = () => {
     return (
         <div className="max-w-5xl mx-auto space-y-12 py-8">
             <header>
-                <h2 className="text-3xl font-serif text-white">{t('menu_citation')}</h2>
+                <h2 className="text-3xl font-serif text-white flex items-center gap-4">
+                    <Quote className="text-slate-400 rotate-180" size={28} />
+                    {t('menu_citation')}
+                </h2>
                 <p className="text-slate-500 mt-2">{t('citation_subtitle')}</p>
             </header>
 
@@ -145,16 +157,28 @@ const Citations = () => {
 
             {/* Library Section */}
             <section className="space-y-8 pt-12">
-                <header className="flex justify-between items-end border-b border-white/5 pb-6">
+                <header className="flex justify-between items-center border-b border-white/5 pb-6">
                     <h3 className="text-2xl font-serif text-white">{t('menu_library')}</h3>
-                    {citations.length > 0 && (
-                        <button
-                            onClick={() => window.confirm(currentLang === 'tr' ? 'Tümünü silmek istediğinize emin misiniz?' : 'Are you sure you want to delete all?') && clearCitations()}
-                            className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2"
-                        >
-                            <Trash2 size={12} /> {t('btn_clear')}
-                        </button>
-                    )}
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2 bg-white/5 p-1 rounded-lg border border-white/10">
+                            <ListFilter size={12} className="text-slate-500 ml-1" />
+                            <select
+                                value={citationFormat}
+                                onChange={(e) => setCitationFormat(e.target.value)}
+                                className="bg-transparent text-slate-300 text-[10px] font-bold focus:outline-none cursor-pointer pr-2 uppercase tracking-widest"
+                            >
+                                {formats.map(f => <option key={f} value={f} className="bg-[#0a0a0c]">{f}</option>)}
+                            </select>
+                        </div>
+                        {citations.length > 0 && (
+                            <button
+                                onClick={() => window.confirm(currentLang === 'tr' ? 'Tümünü silmek istediğinize emin misiniz?' : 'Are you sure you want to delete all?') && clearCitations()}
+                                className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2"
+                            >
+                                <Trash2 size={12} /> {t('btn_clear')}
+                            </button>
+                        )}
+                    </div>
                 </header>
 
                 <div className="grid gap-4">
@@ -166,10 +190,13 @@ const Citations = () => {
                     ) : (
                         citations.map((cite, idx) => (
                             <div key={idx} className="group glass-panel p-6 rounded-2xl flex justify-between items-center bg-white/[0.02] border-white/[0.05] hover:border-white/10 transition-all">
-                                <div
-                                    className="font-serif text-slate-300 text-sm leading-relaxed pr-8"
-                                    dangerouslySetInnerHTML={{ __html: cite }}
-                                />
+                                <div className="font-serif text-slate-300 text-sm leading-relaxed pr-8">
+                                    {typeof cite === 'string' ? (
+                                        <div dangerouslySetInnerHTML={{ __html: cite }} />
+                                    ) : (
+                                        formatCitation(cite, citationFormat)
+                                    )}
+                                </div>
                                 <button
                                     onClick={() => removeCitation(idx)}
                                     className="p-2.5 rounded-lg text-slate-600 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"

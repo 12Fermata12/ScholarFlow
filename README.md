@@ -1,44 +1,53 @@
-# Akıllı Akademik Araçlar (Smart Academic Tools)
+# ScholarFlow - Akademik Üretkenlik Paketi
 
-Google Gemini destekli, üretkenlik ve akademik yazım asistanı.
+Google Gemini destekli, modern "Elite" tasarım diliyle hazırlanmış hepsi-bir-arada akademik araştırmacı asistanı.
 
-## Özellikler
+## ✨ Öne Çıkan Özellikler
 
-- **Konu Sihirbazı**: Araştırma konuları için APA kaynak önerileri.
-- **Yazma Asistanı**: Okunabilirlik ve akademik ton analizi.
-- **Pomodoro**: Odaklanma zamanlayıcısı ve ambiyans sesleri (White Noise, Yağmur, Okyanus).
-- **Kütüphane**: Kaynakça yönetimi.
+### 🌑 Modern & Elite Tasarım
+- Tamamen yenilenmiş, premium siyah-beyaz "Elite" arayüz.
+- Glass-morphism kartlar ve sofistike hover efektleri.
+- Tüm sayfalarda tutarlı tipografi ve görsel hiyerarşi.
 
-## Kurulum ve Çalıştırma
+### 🤖 Gelişmiş AI Entegrasyonu
+- **Akademik Partner (Chat)**: Her an yanınızda olan, sağ alt köşeden açılan asistan.
+- **AI Scorecard**: Metinlerinizin akademik tonunu ve okunabilirliğini analiz edin.
+- **PDF Analiz**: Makalelerinizi yükleyin ve akıllı özetler/sorularla derinlemesine inceleyin.
 
-Bu proje React ve Vite ile hazırlanmıştır. Çalıştırmak için Node.js gereklidir.
+### 🛠️ Kritik Araçlar
+- **Araştırma Planlayıcı**: Hedeflerinizi belirleyin ve ilerlemenizi takip edin.
+- **Okuma Listesi**: Kaynakları "todo", "reading", "done" durumlarıyla yönetin.
+- **Alıntı Yöneticisi**: APA ve diğer formatlarda hızlı kaynakça oluşturun ve kütüphanenize kaydedin.
+- **Odak Modu (Pomodoro)**: Doğa sesleri (Yağmur, Okyanus, Beyaz Gürültü) eşliğinde derin çalışma seansları.
 
-1. Proje klasörüne gidin:
-   ```bash
-   cd smart-academic-tools
-   ```
+### 💾 Veri Güvenliği & Yedekleme
+- **Tam Yedekleme**: Ayarlar sayfasından tüm notlarınızı, API anahtarlarınızı ve verilerinizi tek tıkla JSON olarak dışa aktarın.
+- **Hesap Taşıma**: Giriş ekranından yedeğinizi yükleyerek hesabınızı anında geri yükleyin.
 
-2. Bağımlılıkları yükleyin:
+## 🚀 Başlangıç
+
+Bu proje React + Vite ile geliştirilmiştir.
+
+1. **Bağımlılıkları Yükleyin**:
    ```bash
    npm install
    ```
 
-3. Uygulamayı başlatın:
+2. **Geliştirici Sunucusunu Başlatın**:
    ```bash
-   npm run dev -- --host
+   npm run dev
    ```
-   
-4. Tarayıcıda açılan linke tıklayın (Genellikle `http://localhost:5173`).
 
-## API Anahtarı
+3. **Gemini API Anahtarı**:
+   AI özelliklerini aktifleştirmek için [Google AI Studio](https://aistudio.google.com/) üzerinden anahtarınızı alın ve uygulama içindeki **Ayarlar** kısmına girin.
 
-Uygulamanın AI özelliklerini kullanmak için bir Google Gemini API anahtarına ihtiyacınız vardır.
-1. [Google AI Studio](https://aistudio.google.com/) adresinden API anahtarı alın.
-2. Uygulama içinde **Ayarlar** menüsüne giderek anahtarınızı kaydedin.
+## 🛠️ Teknoloji Yığını
 
-## Teknoloji
+- **Frontend**: React 18, Vite
+- **Stil**: Vanilla CSS + Tailwind CSS (Elite Theme)
+- **İkonlar**: Lucide React
+- **AI**: Google Generative AI (Gemini)
+- **Veri**: LocalStorage (Şifrelenmiş/Güvenli Yedekleme Desteği)
 
-- React
-- Tailwind CSS
-- Google Generative AI SDK
-- Web Audio API
+---
+*Akademik başarınız için tasarlandı.*

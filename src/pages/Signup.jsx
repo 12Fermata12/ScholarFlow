@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { UserPlus, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 const Signup = () => {
     const { signup, t } = useApp();
@@ -24,7 +25,7 @@ const Signup = () => {
         <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8 glass-panel p-10 rounded-[2.5rem] bg-[#111114]/60 border-white/5 relative overflow-hidden">
                 <div className="text-center relative z-10">
-                    <div className="mx-auto h-12 w-12 bg-white text-black rounded-xl flex items-center justify-center font-serif font-bold text-2xl shadow-xl mb-6">S</div>
+                    <img src={logo} alt="Logo" className="mx-auto h-16 w-16 bg-white rounded-2xl shadow-xl mb-6 p-3 object-contain" />
                     <h2 className="text-3xl font-serif text-white">{t('signup_title')}</h2>
                     <p className="mt-2 text-slate-500 text-sm">{t('signup_subtitle')}</p>
                 </div>

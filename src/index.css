@@ -4,7 +4,8 @@
 
 @layer base {
     body {
-        @apply bg-[#0a0a0c] text-[#e2e8f0] antialiased font-sans selection:bg-indigo-500/20 selection:text-white overflow-hidden h-screen transition-colors duration-700 ease-in-out;
+        @apply bg-[#0a0a0c] text-[#e2e8f0] antialiased selection:bg-indigo-500/20 selection:text-white overflow-hidden h-screen transition-colors duration-700 ease-in-out;
+        font-family: 'Outfit', sans-serif;
     }
 
     * {

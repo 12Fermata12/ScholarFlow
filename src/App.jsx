@@ -11,6 +11,8 @@ import Notes from './pages/Notes';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import AiScorecard from './pages/AiScorecard';
+import PdfAnalyzer from './pages/PdfAnalyzer';
 
 function App() {
     return (
@@ -19,12 +21,14 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
-                <Route path="/" element={<AuthGuard><Dashboard /></AuthGuard>} />
+                <Route path="/" element={<Dashboard />} />
                 <Route path="/pomodoro" element={<AuthGuard><Pomodoro /></AuthGuard>} />
                 <Route path="/citations" element={<AuthGuard><Citations /></AuthGuard>} />
                 <Route path="/planner" element={<AuthGuard><Planner /></AuthGuard>} />
                 <Route path="/reading" element={<AuthGuard><ReadingList /></AuthGuard>} />
                 <Route path="/notes" element={<AuthGuard><Notes /></AuthGuard>} />
+                <Route path="/ai-score" element={<AuthGuard><AiScorecard /></AuthGuard>} />
+                <Route path="/pdf-analyzer" element={<AuthGuard><PdfAnalyzer /></AuthGuard>} />
                 <Route path="/settings" element={<AuthGuard><Settings /></AuthGuard>} />
             </Routes>
         </Layout>
