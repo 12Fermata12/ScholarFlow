@@ -2,6 +2,8 @@
 
 Google Gemini destekli, modern "Elite" tasarım diliyle hazırlanmış hepsi-bir-arada akademik araştırmacı asistanı.
 
+Canlı Test İçin: https://scholarflow.mefkuz.com/
+
 ## ✨ Öne Çıkan Özellikler
 
 ### 🌑 Modern & Elite Tasarım
