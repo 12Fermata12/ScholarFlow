@@ -2,7 +2,7 @@
 
 An all-in-one academic researcher assistant powered by Google Gemini, designed with a modern "Elite" design language.
 
-**online testing:** ***https://scholarflow.mefkuz.com/**
+**online testing:** **https://scholarflow.mefkuz.com/**
 
 ## ✨ Key Features
 
