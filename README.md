@@ -35,12 +35,17 @@ This project is built with React + Vite.
    npm install
    ```
 
-2. **Start the Development Server**:
+2. **build**:
    ```bash
-   npm run dev
+   npm run build
    ```
-
-3. **Gemini API Key**:
+   
+3. **Start the Server**:
+   ```bash
+   nohup npx serve -s dist -l 5173 > /dev/null 2>&1 &
+   ```
+   
+4. **Gemini API Key**:
    To activate AI features, get your key from [Google AI Studio](https://aistudio.google.com/) and enter it in the **Settings** section within the app.
 
 ## 🛠️ Technology Stack
