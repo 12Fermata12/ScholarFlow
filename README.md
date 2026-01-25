@@ -1,6 +1,6 @@
 # ScholarFlow - Academic Productivity Suite
 
-An all-in-one academic researcher assistant powered by Google Gemini, designed with a modern "Elite" design language.
+An all-in-one academic researcher assistant powered by Google Gemini, designed with a modern design
 
 **online:** **https://scholarflow.mefkuz.com/**
 
