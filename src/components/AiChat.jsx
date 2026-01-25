@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-// Force HMR update
 import { useApp } from '../context/AppContext';
-import { MessageSquare, Send, X, Sparkles, User, Bot, Minimize2 } from 'lucide-react';
+import { MessageSquare, Send, X, Sparkles, User, Bot, Minimize2, Maximize2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 const AiChat = () => {
     const { t, apiKey, currentLang } = useApp();
     const [isOpen, setIsOpen] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const [messages, setMessages] = useState([
         { id: 1, role: 'bot', text: t('chat_welcome'), time: new Date() }
     ]);
@@ -20,7 +24,7 @@ const AiChat = () => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isFullScreen]);
 
     // Update welcome message when language changes if it's the only message
     useEffect(() => {
@@ -85,27 +89,43 @@ const AiChat = () => {
         }
     };
 
+    const chatWindowStyle = isFullScreen
+        ? {
+            position: 'fixed',
+            zIndex: 99999,
+            top: '20px',
+            left: '20px',
+            right: '20px',
+            bottom: '20px',
+            backgroundColor: '#0a0a0c',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+        }
+        : {
+            position: 'fixed',
+            zIndex: 99999,
+            width: '400px',
+            height: '600px',
+            bottom: '100px',
+            right: '30px',
+            backgroundColor: '#0a0a0c',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+        };
+
     return (
         <>
             {/* Chat Window - Portalled to body to avoid clipping */}
             {isOpen && createPortal(
-                <div
-                    style={{
-                        position: 'fixed',
-                        zIndex: 99999,
-                        width: '400px',
-                        height: '600px',
-                        bottom: '100px',
-                        right: '30px',
-                        backgroundColor: '#0a0a0c',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden'
-                    }}
-                >
+                <div style={chatWindowStyle}>
                     {/* Header */}
                     <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                         <div className="flex items-center gap-3">
@@ -120,12 +140,24 @@ const AiChat = () => {
                                 </div>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors"
-                        >
-                            <Minimize2 size={18} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setIsFullScreen(!isFullScreen)}
+                                className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors"
+                                title={isFullScreen ? 'Küçült' : 'Tam Ekran'}
+                            >
+                                {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    setIsFullScreen(false);
+                                }}
+                                className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Messages Area */}
@@ -137,12 +169,30 @@ const AiChat = () => {
                                         {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                                     </div>
                                     <div className={`
-                                        p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-line font-['Inter',sans-serif]
+                                        p-4 rounded-2xl text-sm leading-relaxed font-['Inter',sans-serif]
                                         ${msg.role === 'user'
                                             ? 'bg-white text-black rounded-tr-none font-medium'
                                             : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-none text-slate-300'}
                                     `}>
-                                        {msg.text}
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkMath]}
+                                            rehypePlugins={[rehypeKatex]}
+                                            components={{
+                                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                                strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                                                em: ({ children }) => <em className="italic text-slate-400">{children}</em>,
+                                                ul: ({ children }) => <ul className="list-disc ml-4 mb-2 space-y-1">{children}</ul>,
+                                                ol: ({ children }) => <ol className="list-decimal ml-4 mb-2 space-y-1">{children}</ol>,
+                                                li: ({ children }) => <li className="text-slate-300">{children}</li>,
+                                                code: ({ inline, children }) => (
+                                                    inline
+                                                        ? <code className="bg-white/10 px-1 py-0.5 rounded text-pink-400 text-[13px]">{children}</code>
+                                                        : <pre className="bg-black/50 p-3 rounded-lg border border-white/10 overflow-x-auto my-2 text-[13px] text-emerald-400"><code>{children}</code></pre>
+                                                ),
+                                            }}
+                                        >
+                                            {msg.text}
+                                        </ReactMarkdown>
                                     </div>
                                 </div>
                             </div>

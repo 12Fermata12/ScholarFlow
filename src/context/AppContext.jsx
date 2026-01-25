@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AppContext = createContext();
 
-const DEFAULT_KEY = "AIzaSyA67n0Scb4xly5e98gFHT1roxw6FNWGmxk";
+const DEFAULT_KEY = "AIzaSyB1poU2jWhtxbuinfE0-Zm9gMVBUUgo7Ro";
 
 export const AppProvider = ({ children }) => {
     // Auth & Settings
