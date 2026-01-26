@@ -17,6 +17,7 @@ const AiChat = () => {
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
+    const abortControllerRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -25,6 +26,20 @@ const AiChat = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isFullScreen]);
+
+    // Cleanup AbortController on unmount
+    useEffect(() => {
+        return () => {
+            if (abortControllerRef.current) {
+                try {
+                    abortControllerRef.current.abort();
+                } catch (e) {
+                    console.warn('[AiChat] Abort failed:', e);
+                }
+                abortControllerRef.current = null;
+            }
+        };
+    }, []);
 
     // Update welcome message when language changes - only if it's still the initial welcome
     useEffect(() => {
@@ -58,20 +73,41 @@ const AiChat = () => {
             return;
         }
 
+        // Create AbortController with timeout
+        abortControllerRef.current = new AbortController();
+        const timeoutId = setTimeout(() => {
+            abortControllerRef.current?.abort();
+        }, 30000); // 30 second timeout
+
         try {
             const prompt = `${t('chat_system_prompt')}
             
             Kullanıcı sorusu (${currentLang}): "${inputValue}"`;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
-            });
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    }),
+                    signal: abortControllerRef.current.signal
+                }
+            );
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
 
             const data = await response.json();
+
+            if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                throw new Error('Invalid API response');
+            }
+
             const botText = data.candidates[0].content.parts[0].text;
 
             setMessages(prev => [...prev, {
@@ -81,15 +117,24 @@ const AiChat = () => {
                 time: new Date()
             }]);
         } catch (error) {
-            console.error('Chat Error:', error);
+            clearTimeout(timeoutId);
+
+            console.error('[AiChat] Error:', error);
+
+            let errorMessage = t('chat_error');
+            if (error.name === 'AbortError') {
+                errorMessage = currentLang === 'tr' ? 'İstek zaman aşımına uğradı (30 saniye).' : 'Request timed out (30 seconds).';
+            }
+
             setMessages(prev => [...prev, {
                 id: Date.now() + 3,
                 role: 'bot',
-                text: t('chat_error'),
+                text: errorMessage,
                 time: new Date()
             }]);
         } finally {
             setIsLoading(false);
+            abortControllerRef.current = null;
         }
     };
 

@@ -50,6 +50,10 @@ const PdfAnalyzer = () => {
         setError('');
         setResult(null);
 
+        // AbortController with timeout
+        const abortController = new AbortController();
+        let timeoutId = null;
+
         try {
             const text = await extractTextFromPdf(file);
 
@@ -62,22 +66,33 @@ const PdfAnalyzer = () => {
             Metin:
             "${text.substring(0, 15000)}"`;
 
-            // Create timeout promise
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('API request timeout')), 30000);
-            });
+            // Set timeout to abort
+            timeoutId = setTimeout(() => {
+                abortController.abort();
+            }, 30000); // 30 second timeout
 
-            // Race between API call and timeout
-            const response = await Promise.race([
-                fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            // Fetch with AbortController
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }]
-                    })
-                }),
-                timeoutPromise
-            ]);
+                    }),
+                    signal: abortController.signal
+                }
+            );
+
+            // Clear timeout on success
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
 
             const data = await response.json();
 
@@ -94,11 +109,23 @@ const PdfAnalyzer = () => {
 
             setResult({
                 summary: summaryMatch ? summaryMatch[1].trim() : aiResponse,
-                keywords: keywordsMatch ? keywordsMatch[1].trim().split(',').map(k => k.trim()) : []
+                keywords: keywordsMatch ? keywordsMatch[1].trim().split(',').map(k => k.trim()).filter(k => k.length > 0) : []
             });
         } catch (err) {
-            console.error('PDF Analysis Error:', err);
-            setError(t('pdf_error_generic'));
+            // Clear timeout on error
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+
+            console.error('[PdfAnalyzer] Error:', err);
+
+            // Handle abort/timeout
+            if (err.name === 'AbortError') {
+                setError(currentLang === 'tr' ? 'İstek zaman aşımına uğradı (30 saniye).' : 'Request timed out (30 seconds).');
+            } else {
+                setError(t('pdf_error_generic'));
+            }
         } finally {
             setIsProcessing(false);
         }

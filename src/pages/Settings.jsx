@@ -7,6 +7,7 @@ const Settings = () => {
     const [saved, setSaved] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const fileInputRef = useRef(null);
+    const fileReaderRef = useRef(null);
 
     const handleSave = () => {
         setSaved(true);
@@ -17,6 +18,20 @@ const Settings = () => {
         setToastMessage(message);
         setTimeout(() => setToastMessage(''), 3000);
     };
+
+    // Cleanup FileReader on unmount
+    React.useEffect(() => {
+        return () => {
+            if (fileReaderRef.current) {
+                try {
+                    fileReaderRef.current.abort();
+                } catch (e) {
+                    console.warn('[Settings] FileReader abort failed:', e);
+                }
+                fileReaderRef.current = null;
+            }
+        };
+    }, []);
 
     const handleExport = () => {
         exportUserData();
@@ -29,18 +44,43 @@ const Settings = () => {
 
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
+        if (!file) return;
+
+        // Create and track FileReader
+        const reader = new FileReader();
+        fileReaderRef.current = reader;
+
+        // Success handler
+        reader.onload = (event) => {
+            try {
                 const success = importUserData(event.target.result);
                 if (success) {
                     showToast(t('toast_imported'));
                 } else {
                     showToast(t('toast_import_error'));
                 }
-            };
-            reader.readAsText(file);
-        }
+            } catch (error) {
+                console.error('[Settings] Import failed:', error);
+                showToast(t('toast_import_error'));
+            } finally {
+                fileReaderRef.current = null;
+            }
+        };
+
+        // Error handler
+        reader.onerror = (error) => {
+            console.error('[Settings] FileReader error:', error);
+            showToast(t('toast_import_error'));
+            fileReaderRef.current = null;
+        };
+
+        // Abort handler
+        reader.onabort = () => {
+            console.warn('[Settings] FileReader aborted');
+            fileReaderRef.current = null;
+        };
+
+        reader.readAsText(file);
     };
 
     return (

@@ -22,15 +22,21 @@ const Layout = ({ children }) => {
     const { currentLang, toggleLanguage, t, user, logout } = useApp();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+    const sidebarOpenRef = React.useRef(sidebarOpen);
 
     React.useEffect(() => {
         document.title = t('app_title');
     }, [currentLang, t]);
 
-    // Handle window resize with cleanup
+    // Keep ref in sync with state
+    React.useEffect(() => {
+        sidebarOpenRef.current = sidebarOpen;
+    }, [sidebarOpen]);
+
+    // Handle window resize - register only once
     React.useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth > 768 && !sidebarOpen) {
+            if (window.innerWidth > 768 && !sidebarOpenRef.current) {
                 setSidebarOpen(true);
             }
         };
@@ -41,7 +47,7 @@ const Layout = ({ children }) => {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [sidebarOpen]);
+    }, []); // Empty deps - only mount/unmount
 
     const toolsNavItems = [
         { to: "/planner", icon: <ListTodo size={18} className="text-slate-400" />, label: t('menu_planner') },

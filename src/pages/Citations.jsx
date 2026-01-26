@@ -28,6 +28,8 @@ const Citations = () => {
         url: ''
     });
     const [preview, setPreview] = useState('');
+    const [toast, setToast] = useState('');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const generateCitation = () => {
         if (!form.authorLast || !form.title) return;
@@ -46,7 +48,8 @@ const Citations = () => {
     const handleCopy = () => {
         if (!preview) return;
         navigator.clipboard.writeText(preview.replace(/<[^>]*>/g, ''));
-        alert(t('toast_copied'));
+        setToast(t('toast_copied'));
+        setTimeout(() => setToast(''), 2000);
     };
 
     const handleSave = () => {
@@ -172,7 +175,7 @@ const Citations = () => {
                         </div>
                         {citations.length > 0 && (
                             <button
-                                onClick={() => window.confirm(currentLang === 'tr' ? 'Tümünü silmek istediğinize emin misiniz?' : 'Are you sure you want to delete all?') && clearCitations()}
+                                onClick={() => setShowDeleteConfirm(true)}
                                 className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2"
                             >
                                 <Trash2 size={12} /> {t('btn_clear')}
@@ -208,6 +211,46 @@ const Citations = () => {
                     )}
                 </div>
             </section>
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className="fixed bottom-8 right-8 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 font-bold text-sm animate-in fade-in slide-in-from-bottom-4 duration-300 z-50">
+                    {toast}
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <div className="bg-[#111114] border border-white/10 rounded-2xl p-8 max-w-md mx-4 space-y-6">
+                        <h3 className="text-white text-lg font-semibold">
+                            {currentLang === 'tr' ? 'Emin misiniz?' : 'Are you sure?'}
+                        </h3>
+                        <p className="text-slate-400 text-sm">
+                            {currentLang === 'tr'
+                                ? 'Tüm kaynakçalar kalıcı olarak silinecek.'
+                                : 'All citations will be permanently deleted.'}
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="flex-1 h-12 bg-white/5 border border-white/10 text-white rounded-xl hover:bg-white/10 transition-all text-xs font-bold uppercase"
+                            >
+                                {currentLang === 'tr' ? 'İptal' : 'Cancel'}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    clearCitations();
+                                    setShowDeleteConfirm(false);
+                                }}
+                                className="flex-1 h-12 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all text-xs font-bold uppercase"
+                            >
+                                {currentLang === 'tr' ? 'Sil' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
