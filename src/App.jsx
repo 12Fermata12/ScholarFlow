@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import AuthGuard from './components/AuthGuard';
@@ -13,8 +13,18 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AiScorecard from './pages/AiScorecard';
 import PdfAnalyzer from './pages/PdfAnalyzer';
+import { logger } from './utils/logger';
 
 function App() {
+    // Start logger auto-cleanup when app mounts
+    useEffect(() => {
+        logger.startAutoCleanup();
+
+        return () => {
+            logger.stopAutoCleanup();
+        };
+    }, []);
+
     return (
         <Layout>
             <Routes>

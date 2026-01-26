@@ -139,17 +139,33 @@ export const cleanOldLogs = () => {
 
 /**
  * Debounce function to limit function calls
+ * Returns a debounced function with a cancel method for cleanup
  */
 export const debounce = (func, wait) => {
     let timeout;
-    return function executedFunction(...args) {
+
+    const executedFunction = function (...args) {
         const later = () => {
-            clearTimeout(timeout);
+            timeout = null;
             func(...args);
         };
-        clearTimeout(timeout);
+
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+
         timeout = setTimeout(later, wait);
     };
+
+    // Add cancel method for cleanup
+    executedFunction.cancel = () => {
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+    };
+
+    return executedFunction;
 };
 
 /**

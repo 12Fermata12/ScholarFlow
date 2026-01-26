@@ -8,6 +8,9 @@ export const getGeminiSuggestions = async (text, apiKey) => {
         return null;
     }
 
+    // Track timeout ID for cleanup
+    let timeoutId = null;
+
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -25,9 +28,11 @@ Metin:
 
 Sadece önerileri madde madde listele, başka açıklama yapma. Her öneri tek satır olsun.`;
 
-        // Create timeout promise
+        // Create timeout promise with cleanup
         const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('API request timeout after 30 seconds')), 30000);
+            timeoutId = setTimeout(() => {
+                reject(new Error('API request timeout after 30 seconds'));
+            }, 30000);
         });
 
         // Race between API call and timeout
@@ -36,11 +41,17 @@ Sadece önerileri madde madde listele, başka açıklama yapma. Her öneri tek s
             timeoutPromise
         ]);
 
+        // Clear timeout on success
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        }
+
         const response = await result.response;
 
         // Validate response
         if (!response || !response.text) {
-            console.error('Invalid API response:', response);
+            console.error('[GeminiAPI] Invalid API response:', response);
             return null;
         }
 
@@ -56,15 +67,23 @@ Sadece önerileri madde madde listele, başka açıklama yapma. Her öneri tek s
 
         return suggestionList.length > 0 ? suggestionList : null;
     } catch (error) {
-        console.error('Gemini API Error:', error);
+        // Always clean up timeout
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        }
+
+        console.error('[GeminiAPI] Error:', error);
 
         // More specific error logging
         if (error.message?.includes('timeout')) {
-            console.error('API request timed out');
+            console.error('[GeminiAPI] Request timed out');
         } else if (error.message?.includes('quota')) {
-            console.error('API quota exceeded');
+            console.error('[GeminiAPI] API quota exceeded');
         } else if (error.message?.includes('key')) {
-            console.error('Invalid API key');
+            console.error('[GeminiAPI] Invalid API key');
+        } else {
+            console.error('[GeminiAPI] Unknown error:', error.message);
         }
 
         return null;

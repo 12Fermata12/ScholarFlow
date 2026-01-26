@@ -16,23 +16,43 @@ const LogLevel = {
     ERROR: 'ERROR',
 };
 
-// Auto-cleanup timer
+// Auto-cleanup timer with singleton pattern
 let cleanupTimer = null;
+let isCleanupActive = false;
 
 const startAutoCleanup = () => {
-    if (cleanupTimer) return; // Already running
+    if (isCleanupActive || cleanupTimer) {
+        console.warn('[Logger] Cleanup timer already active, skipping...');
+        return;
+    }
 
+    isCleanupActive = true;
     cleanupTimer = setInterval(() => {
-        cleanOldLogs();
+        try {
+            cleanOldLogs();
+        } catch (error) {
+            console.error('[Logger] Cleanup failed:', error);
+        }
     }, CLEANUP_INTERVAL);
+
+    console.log('[Logger] Auto-cleanup started');
 };
 
 const stopAutoCleanup = () => {
     if (cleanupTimer) {
         clearInterval(cleanupTimer);
         cleanupTimer = null;
+        isCleanupActive = false;
+        console.log('[Logger] Auto-cleanup stopped');
     }
 };
+
+// Cleanup on browser close/refresh
+if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', () => {
+        stopAutoCleanup();
+    });
+}
 
 const getLogs = () => {
     try {
@@ -65,8 +85,8 @@ const saveLog = (level, message, data = null) => {
     console.log(`%c[${level}] ${message}`, color, data || '');
 };
 
-// Start auto-cleanup when logger is imported
-startAutoCleanup();
+// Note: Auto-cleanup must be started manually in App component to avoid memory leaks
+// Call logger.startAutoCleanup() when app mounts
 
 export const logger = {
     info: (message, data) => saveLog(LogLevel.INFO, message, data),

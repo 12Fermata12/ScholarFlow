@@ -22,16 +22,47 @@ const Pomodoro = () => {
 
     const audioCtxRef = useRef(null);
     const noiseSourceRef = useRef(null);
-    const audioRefs = {
-        rain: useRef(new Audio('https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg')),
-        ocean: useRef(new Audio('https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg'))
-    };
+    const rainAudioRef = useRef(null);
+    const oceanAudioRef = useRef(null);
+    const isInitializedRef = useRef(false);
 
-    // Update audio volume when it changes
+    // Initialize audio elements only once
     useEffect(() => {
-        Object.values(audioRefs).forEach(ref => {
+        if (isInitializedRef.current) return;
+
+        // Create audio elements
+        rainAudioRef.current = new Audio('https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg');
+        oceanAudioRef.current = new Audio('https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg');
+
+        // Configure audio elements
+        [rainAudioRef, oceanAudioRef].forEach(ref => {
             if (ref.current) {
                 ref.current.loop = true;
+                ref.current.volume = volume;
+                ref.current.preload = 'metadata'; // Only load metadata
+            }
+        });
+
+        isInitializedRef.current = true;
+        console.log('[Pomodoro] Audio elements initialized');
+
+        return () => {
+            [rainAudioRef, oceanAudioRef].forEach(ref => {
+                if (ref.current) {
+                    ref.current.pause();
+                    ref.current.src = '';
+                    ref.current.load();
+                    ref.current = null;
+                }
+            });
+            isInitializedRef.current = false;
+        };
+    }, []); // Only run once
+
+    // Update volume when it changes
+    useEffect(() => {
+        [rainAudioRef, oceanAudioRef].forEach(ref => {
+            if (ref.current) {
                 ref.current.volume = volume;
             }
         });
@@ -42,13 +73,27 @@ const Pomodoro = () => {
         let interval = null;
         if (isActive && timeLeft > 0) {
             interval = setInterval(() => {
-                setTimeLeft(timeLeft - 1);
+                setTimeLeft(prev => prev - 1);
             }, 1000);
         } else if (timeLeft === 0 && isActive) {
             setIsActive(false);
-            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
+
+            // Play beep sound
+            const beep = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+            beep.play().catch(e => console.error('[Pomodoro] Beep failed:', e));
+
             if (timerMode === 'pomodoro') incrementPomodoro();
-            alert(t('toast_time_up'));
+
+            // Use notification instead of blocking alert
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('⏰ Pomodoro', {
+                    body: t('toast_time_up'),
+                    icon: '/favicon.ico'
+                });
+            } else {
+                // Fallback to console log (non-blocking)
+                console.log('[Pomodoro] Time is up!');
+            }
         }
         return () => {
             if (interval) clearInterval(interval);
@@ -59,11 +104,12 @@ const Pomodoro = () => {
     useEffect(() => {
         return () => {
             // Stop and cleanup all audio elements
-            Object.values(audioRefs).forEach(ref => {
+            [rainAudioRef, oceanAudioRef].forEach(ref => {
                 if (ref.current) {
                     ref.current.pause();
                     ref.current.currentTime = 0;
-                    ref.current.src = ''; // Release audio resource
+                    ref.current.src = '';
+                    ref.current.load();
                 }
             });
 
@@ -71,8 +117,9 @@ const Pomodoro = () => {
             if (noiseSourceRef.current) {
                 try {
                     noiseSourceRef.current.stop();
+                    noiseSourceRef.current.disconnect();
                 } catch (e) {
-                    // Already stopped
+                    console.warn('[Pomodoro] Failed to stop noise source:', e);
                 }
                 noiseSourceRef.current = null;
             }
@@ -81,10 +128,12 @@ const Pomodoro = () => {
                 try {
                     audioCtxRef.current.close();
                 } catch (e) {
-                    // Already closed
+                    console.warn('[Pomodoro] Failed to close AudioContext:', e);
                 }
                 audioCtxRef.current = null;
             }
+
+            console.log('[Pomodoro] All audio resources cleaned');
         };
     }, []);
 
@@ -110,54 +159,77 @@ const Pomodoro = () => {
             stopAllSounds();
             if (type === 'white') {
                 startWhiteNoise();
-            } else {
-                audioRefs[type].current.play();
+            } else if (type === 'rain') {
+                rainAudioRef.current?.play().catch(e => console.error('[Pomodoro] Rain audio failed:', e));
+            } else if (type === 'ocean') {
+                oceanAudioRef.current?.play().catch(e => console.error('[Pomodoro] Ocean audio failed:', e));
             }
             setActiveSound(type);
         }
     };
 
     const stopAllSounds = () => {
-        Object.values(audioRefs).forEach(ref => {
+        [rainAudioRef, oceanAudioRef].forEach(ref => {
             if (ref.current) {
                 ref.current.pause();
                 ref.current.currentTime = 0;
             }
         });
+
         if (noiseSourceRef.current) {
             try {
                 noiseSourceRef.current.stop();
+                noiseSourceRef.current.disconnect();
             } catch (e) {
-                // Already stopped or disconnected
+                console.warn('[Pomodoro] Noise already stopped:', e);
             }
             noiseSourceRef.current = null;
         }
     };
 
     const startWhiteNoise = () => {
-        if (!audioCtxRef.current) {
-            audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+            if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+                audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const ctx = audioCtxRef.current;
+
+            // Resume context if suspended
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+
+            const bufferSize = ctx.sampleRate * 2;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+            noise.loop = true;
+
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 800;
+
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = volume * 0.1;
+
+            noise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            noise.start();
+            noiseSourceRef.current = noise;
+
+            console.log('[Pomodoro] White noise started');
+        } catch (error) {
+            console.error('[Pomodoro] Failed to start white noise:', error);
         }
-        const ctx = audioCtxRef.current;
-        const bufferSize = ctx.sampleRate * 2;
-        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = Math.random() * 2 - 1;
-        }
-        const noise = ctx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 800;
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = volume * 0.1;
-        noise.connect(filter);
-        filter.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        noise.start();
-        noiseSourceRef.current = noise;
     };
 
     const progress = (timeLeft / initialTime) * 283;

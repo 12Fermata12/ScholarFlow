@@ -91,6 +91,19 @@ export const AppProvider = ({ children }) => {
         []
     );
 
+    // Cleanup debounced functions on unmount
+    useEffect(() => {
+        return () => {
+            // Cancel all pending debounced calls
+            [debouncedSaveUser, debouncedSaveRegisteredUsers, debouncedSaveUserData].forEach(fn => {
+                if (fn && fn.cancel) {
+                    fn.cancel();
+                }
+            });
+            console.log('[AppContext] All debounced functions cancelled');
+        };
+    }, [debouncedSaveUser, debouncedSaveRegisteredUsers, debouncedSaveUserData]);
+
     // Persistent Sync with debouncing
     useEffect(() => {
         if (user) debouncedSaveUser(user);
