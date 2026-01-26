@@ -6,7 +6,6 @@ import {
     BookOpen,
     Settings,
     Menu,
-    Home,
     ListTodo,
     StickyNote,
     LogOut,

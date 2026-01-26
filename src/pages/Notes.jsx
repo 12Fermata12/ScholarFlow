@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, memo } from 'react';
 import { useApp } from '../context/AppContext';
 import {
     Plus,
@@ -87,36 +87,48 @@ const Notes = () => {
                     </div>
                 ) : (
                     notes.map((note, idx) => (
-                        <div key={idx} className="group glass-panel p-8 rounded-3xl bg-[#111114]/60 border-white/5 hover:border-white/10 transition-all flex flex-col justify-between min-h-[250px]">
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-start">
-                                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-1 rounded">
-                                        <Clock size={10} /> {note.date}
-                                    </span>
-                                    <button
-                                        onClick={() => removeNote(idx)}
-                                        className="text-slate-800 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                                <h3 className="text-xl font-serif text-white">{note.title}</h3>
-                                <p className="text-sm text-slate-400 line-clamp-4 leading-relaxed font-light">
-                                    {note.content}
-                                </p>
-                            </div>
-                            <div className="pt-6 border-t border-white/5 flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer">
-                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] group-hover:text-white transition-colors">
-                                    {currentLang === 'tr' ? 'Notu Görüntüle' : 'View Note'}
-                                </span>
-                                <Plus size={14} className="text-slate-700 group-hover:text-white transition-colors" />
-                            </div>
-                        </div>
+                        <NoteItem
+                            key={note.id || idx}
+                            note={note}
+                            index={idx}
+                            onRemove={removeNote}
+                            lang={currentLang}
+                        />
                     ))
                 )}
             </div>
         </div>
     );
 };
+
+const NoteItem = memo(({ note, index, onRemove, lang }) => (
+    <div className="group glass-panel p-8 rounded-3xl bg-[#111114]/60 border-white/5 hover:border-white/10 transition-all flex flex-col justify-between min-h-[250px]">
+        <div className="space-y-3">
+            <div className="flex justify-between items-start">
+                <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-1 rounded">
+                    <Clock size={10} /> {note.date}
+                </span>
+                <button
+                    onClick={() => onRemove(index)}
+                    className="text-slate-800 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
+            <h3 className="text-xl font-serif text-white">{note.title}</h3>
+            <p className="text-sm text-slate-400 line-clamp-4 leading-relaxed font-light">
+                {note.content}
+            </p>
+        </div>
+        <div className="pt-6 border-t border-white/5 flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer">
+            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] group-hover:text-white transition-colors">
+                {lang === 'tr' ? 'Notu Görüntüle' : 'View Note'}
+            </span>
+            <Plus size={14} className="text-slate-700 group-hover:text-white transition-colors" />
+        </div>
+    </div>
+));
+
+NoteItem.displayName = 'NoteItem';
 
 export default Notes;

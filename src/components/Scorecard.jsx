@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const Scorecard = ({ score = 0, metrics = [], suggestions = [] }) => {
     const circumference = 2 * Math.PI * 45;

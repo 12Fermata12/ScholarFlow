@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Globe, Moon, ShieldCheck, Cpu, Download, Upload, Key } from 'lucide-react';
 
@@ -20,7 +20,7 @@ const Settings = () => {
     };
 
     // Cleanup FileReader on unmount
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             if (fileReaderRef.current) {
                 try {
@@ -215,7 +215,7 @@ const Settings = () => {
                                 className="w-full h-12 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-3 hover:bg-white/10 active:scale-[0.98] group"
                             >
                                 <Download size={16} className="text-slate-500 group-hover:text-white transition-colors" />
-                                Github'dan Güncelle (Manuel)
+                                Github&apos;dan Güncelle (Manuel)
                             </a>
                         </div>
                     </div>

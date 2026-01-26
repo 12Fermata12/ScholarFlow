@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Scorecard from '../components/Scorecard';
 import { Sparkles, FileText, AlertCircle } from 'lucide-react';

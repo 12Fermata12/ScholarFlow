@@ -1,9 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { useDropzone } from 'react-dropzone';
-import { FileUp, FileSearch, Sparkles, CheckCircle2, Loader2, Key } from 'lucide-react';
+import { FileUp, FileSearch, Sparkles, CheckCircle2 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
-import { getGeminiSuggestions } from '../utils/geminiApi';
 
 // Set up PDF.js worker
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';

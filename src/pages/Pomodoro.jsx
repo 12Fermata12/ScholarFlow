@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import {
     Play,
@@ -57,7 +57,7 @@ const Pomodoro = () => {
             });
             isInitializedRef.current = false;
         };
-    }, []); // Only run once
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update volume when it changes
     useEffect(() => {

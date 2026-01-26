@@ -1,9 +1,7 @@
-import React from 'react';
+
 import { useApp } from '../context/AppContext';
 import { NavLink } from 'react-router-dom';
 import {
-    CheckCircle2,
-    Play,
     ArrowRight,
     ListTodo,
     BookOpen,

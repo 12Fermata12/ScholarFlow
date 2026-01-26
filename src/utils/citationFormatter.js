@@ -6,7 +6,7 @@ export const formatCitation = (citation, format = 'APA') => {
     // Mapping from Citation.jsx form fields to Formatter expectations
     const author = citation.authorLast || 'Anonim';
     const initial = citation.authorFirst ? `${citation.authorFirst}.` : '';
-    const { year, title, source, citationType, url, doi } = citation;
+    const { year, title, source } = citation;
 
     // source can be publisher or journal based on type
     const sourceStr = source || 'Bilinmiyor';
