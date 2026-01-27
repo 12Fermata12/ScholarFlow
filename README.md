@@ -36,16 +36,28 @@ This project is built with React + Vite.
    npm install
    ```
 
-2. **build**:
+2. **Build**:
    ```bash
    npm run build
    ```
    
-3. **Start the Server**:
+3. **Start the Server (Production)**:
+   We use **PM2** for robust process management and memory safety.
+   
    ```bash
-   nohup npx serve -s dist -l 5173 > /dev/null 2>&1 &
+   # Install PM2 globally if not already installed
+   npm install -g pm2
+   
+   # Start with the secure configuration
+   pm2 start ecosystem.config.cjs
+   
+   # Save for startup
+   pm2 save
+   pm2 startup
    ```
    
+   > **Note:** If you experience crashes after 1-2 hours, please refer to [FIX_GUIDE.md](./FIX_GUIDE.md) to enable Swap space on your server.
+
 4. **Gemini API Key**:
    To activate AI features, get your key from [Google AI Studio](https://aistudio.google.com/) and enter it in the **Settings** section within the app.
 
@@ -57,9 +69,11 @@ This project is built with React + Vite.
 - **AI**: Google Generative AI (Gemini 2.5 Flash)
 - **Math Rendering**: KaTeX + remark-math + rehype-katex
 - **Data**: LocalStorage (Encrypted/Secure Backup Support)
+- **Deployment**: PM2 (Process Manager)
 
 ## 🎯 Recent Updates
 
+- ✅ **Fixed Server Crashes:** Added robust PM2 configuration and Swap guide (`FIX_GUIDE.md`)
 - ✅ Added LaTeX/KaTeX support for mathematical formulas
 - ✅ Updated to Gemini 2.5 Flash model
 - ✅ Improved error handling with ErrorBoundary
