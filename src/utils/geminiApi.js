@@ -13,7 +13,7 @@ export const getGeminiSuggestions = async (text, apiKey) => {
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
         const prompt = `Aşağıdaki akademik metni analiz et ve geliştirme önerileri sun. Öneriler kısa, net ve uygulanabilir olmalı. Her öneriyi tek bir cümle olarak yaz. En fazla 5 öneri ver.
 
