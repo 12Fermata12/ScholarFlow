@@ -6,7 +6,8 @@ module.exports = {
         instances: 1,
         autorestart: true,
         watch: false,
-        max_memory_restart: '350M', // Restart if memory usage exceeds 350MB to prevent system OOM
+        max_memory_restart: '1G', // Restart if memory usage exceeds 1GB
+        exp_backoff_restart_delay: 100, // Delay between restarts
         env: {
             NODE_ENV: "production",
         },
